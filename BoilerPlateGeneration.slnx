@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="BoilerPlate/BoilerPlate.csproj" />
+  <Project Path="BoilerPlateGeneration/BoilerPlateGeneration.csproj" />
+  <Project Path="Shared/Shared.csproj" Id="67b26c24-860c-4c3b-9baa-4dd55f1a1839" />
+</Solution>

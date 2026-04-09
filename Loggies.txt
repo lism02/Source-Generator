@@ -1,0 +1,6 @@
+[+] Found 2 members in the Calculator class
+[+] Checked if methods exist in Calculator class
+[+] Added using statements to generated class
+[+] Found namespace for Calculator class BoilerPlate
+[+] Added methods to generated class
+[+] Added source to context
