@@ -5,9 +5,10 @@ using Shared;
 using System;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace BoilerPlateGeneration;
+
+// Code mostly from tutorial https://specterops.io/blog/2024/10/01/dotnet-source-generators-in-2024-part-1-getting-started/?source=rss----f05f8696e3cc---4
 
 [Generator]
 public class CalculatorGenerator : IIncrementalGenerator
@@ -15,33 +16,15 @@ public class CalculatorGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<ClassDeclarationSyntax> calculatorClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
-        predicate: (SyntaxNode node, CancellationToken cancelToken) =>
-        {
-            //the predicate should be super lightweight so it can quickly filter out nodes that are not of interest
-            //it is basically called all of the time so it should be a quick filter
-            return node is ClassDeclarationSyntax classDeclaration && classDeclaration.Identifier.ToString() == "Calculator";
-        },
-        transform: (GeneratorSyntaxContext ctx, CancellationToken cancelToken) =>
-        {
-            //the transform is called only when the predicate returns true
-            //so for example if we have one class named Calculator
-            //this will only be called once regardless of how many other classes exist
-            var classDeclaration = (ClassDeclarationSyntax)ctx.Node;
-            return classDeclaration;
-        }
-        );
+        predicate: (node, cancelToken)
+            => node is ClassDeclarationSyntax classDeclaration && classDeclaration.Identifier.ToString() == "Calculator",
+        transform: (ctx, cancelToken)
+            => (ClassDeclarationSyntax)ctx.Node);
 
-
-        context.RegisterSourceOutput(calculatorClassesProvider, (sourceProductionContext, calculatorClass) => Execute(calculatorClass, sourceProductionContext));
+        context.RegisterSourceOutput(calculatorClassesProvider,
+            (sourceProductionContext, calculatorClass) => Execute(calculatorClass, sourceProductionContext));
     }
 
-    /// <summary>
-    /// This method is where the real work of the generator is done
-    /// This ensures optimal performance by only executing the generator when needed
-    /// The method can be named whatever you want but Execute seems to be the standard 
-    /// </summary>
-    /// <param name="calculatorClass"></param>
-    /// <param name="context"></param>
     public void Execute(ClassDeclarationSyntax calculatorClass, SourceProductionContext context)
     {
         GeneratorLogging.SetLogFilePath(@"C:\Chipsoft\BoilerPlateGeneration\Loggies.txt");
@@ -50,12 +33,6 @@ public class CalculatorGenerator : IIncrementalGenerator
             var calculatorClassMembers = calculatorClass.Members;
             GeneratorLogging.LogMessage($"[+] Found {calculatorClassMembers.Count} members in the Calculator class");
             //check if the methods we want to add exist already 
-            var addMethod = calculatorClassMembers.FirstOrDefault(member => member is MethodDeclarationSyntax method && method.Identifier.Text == "Add");
-            var subtractMethod = calculatorClassMembers.FirstOrDefault(member => member is MethodDeclarationSyntax method && method.Identifier.Text == "Subtract");
-            var multiplyMethod = calculatorClassMembers.FirstOrDefault(member => member is MethodDeclarationSyntax method && method.Identifier.Text == "Multiply");
-            var divideMethod = calculatorClassMembers.FirstOrDefault(member => member is MethodDeclarationSyntax method && method.Identifier.Text == "Divide");
-
-            GeneratorLogging.LogMessage("[+] Checked if methods exist in Calculator class");
 
             //this string builder will hold our source code for the methods we want to add
             StringBuilder calcGeneratedClassBuilder = new StringBuilder();
@@ -79,22 +56,10 @@ public class CalculatorGenerator : IIncrementalGenerator
             calcGeneratedClassBuilder.AppendLine($"namespace {calcClassNamespace?.Name};");
             calcGeneratedClassBuilder.AppendLine($"{calculatorClass.Modifiers} class {calculatorClass.Identifier}");
             calcGeneratedClassBuilder.AppendLine("{");
+            calcGeneratedClassBuilder.AppendLine("//hello comment");
 
-            //if the methods do not exist, we will add them
-            if (addMethod is null)
-            {
-                //when using a raw string the first " is the far left margin in the file
-                //if you want the proper indention on the methods you will want to tab the string content at least once
-                calcGeneratedClassBuilder.AppendLine(
-                """
-                    public int Add(int a, int b)
-                    {
-                        var result = a + b;
-                        Console.WriteLine($"The result of adding {a} and {b} is {result}");
-                        return result;
-                    }
-                """);
-            }
+            AddMethodAdd(calcGeneratedClassBuilder, calculatorClassMembers);
+
             calcGeneratedClassBuilder.AppendLine("}");
             //while a bit crude it is a simple way to add the methods to the class
 
@@ -110,4 +75,25 @@ public class CalculatorGenerator : IIncrementalGenerator
             GeneratorLogging.LogMessage($"[-] Exception occurred in generator: {e}", LoggingLevel.Error);
         }
     }
+
+    private void AddMethodAdd(StringBuilder builder, SyntaxList<MemberDeclarationSyntax> calculatorClassMembers)
+    {
+
+        var addMethod = calculatorClassMembers.FirstOrDefault(member => member is MethodDeclarationSyntax method && method.Identifier.Text == "Add");
+        if (addMethod is null)
+        {
+            //when using a raw string the first " is the far left margin in the file
+            //if you want the proper indention on the methods you will want to tab the string content at least once
+            builder.AppendLine(
+            """
+                    public int Add(int a, int b)
+                    {
+                        var result = a + b;
+                        Console.WriteLine($"The result of adding {a} and {b} is {result}");
+                        return result;
+                    }
+                """);
+        }
+    }
+
 }
