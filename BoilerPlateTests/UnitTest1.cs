@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using BoilerPlateGeneration.LogicFields;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace BoilerPlateGeneration.Tests
 {

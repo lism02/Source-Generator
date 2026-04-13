@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BoilerPlate.Request;
+﻿namespace BoilerPlate.Request;
 
 [GenerateLogicFields]
 public interface IRequest
 {
     string Id { get; }
+    string MyTest { get; set; }
 }
