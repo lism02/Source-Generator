@@ -25,7 +25,7 @@ public class LogicFieldsGenerator : IIncrementalGenerator
     {
         try
         {
-            var className = LogicFieldTemplates.ClassName(logicFieldType.Identifier.Text[1..]);
+            var className = LogicFieldTemplates.ClassName(logicFieldType);
 
             context.AddSource($"{className}.g.cs",
                 LogicFieldTemplates.Class(
@@ -33,10 +33,12 @@ public class LogicFieldsGenerator : IIncrementalGenerator
                     className, 
                     logicFieldType.Members
                         .OfType<PropertyDeclarationSyntax>()
-                        .Select(member => member.Identifier.Text)));
+                        .Select(member => member.Identifier.Text)
+                        .Distinct()));
         }
         catch (Exception e)
         {
+            // ignored
         }
     }
 }
