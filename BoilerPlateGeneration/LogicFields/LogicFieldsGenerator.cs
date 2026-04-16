@@ -1,10 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
-using BoilerPlateGeneration.Namespaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.LogicFields;
+
+public record LogicFieldInfo(IEnumerable<string> Fields);
 
 [Generator]
 public class LogicFieldsGenerator : IIncrementalGenerator
@@ -13,32 +14,25 @@ public class LogicFieldsGenerator : IIncrementalGenerator
     {
         var toGenerateForList = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BoilerPlate.GenerateLogicFieldsAttribute",
-            (node, cancelToken) => node is TypeDeclarationSyntax,
-            (ctx, cancelToken) => (TypeDeclarationSyntax) ctx.TargetNode);
+            (node, cancelToken) => node is ClassDeclarationSyntax,
+            (ctx, cancelToken) =>
+                ((ClassDeclarationSyntax) ctx.TargetNode,
+                    new LogicFieldInfo(GetPropertyNames((INamedTypeSymbol) ctx.TargetSymbol))));
 
-        context.RegisterImplementationSourceOutput(toGenerateForList,
-            (sourceProductionContext, toGenerateFor) => Execute(toGenerateFor, sourceProductionContext));
+        context.RegisterImplementationSourceOutput(toGenerateForList, Execute);
     }
 
+    private IEnumerable<string> GetPropertyNames(INamedTypeSymbol symbol)
+        => symbol.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Select(property => property.Name);
 
-    private void Execute(TypeDeclarationSyntax logicFieldType, SourceProductionContext context)
+    private void Execute(SourceProductionContext context,
+        (ClassDeclarationSyntax classDeclaration, LogicFieldInfo info) parameters)
     {
-        try
-        {
-            var className = LogicFieldTemplates.ClassName(logicFieldType);
+        var (fileName, content) = TemplateManager.Run(new LogicFieldTemplates(), 
+            parameters.classDeclaration, parameters.info);
 
-            context.AddSource($"{className}.g.cs",
-                LogicFieldTemplates.Class(
-                    NamespaceManager.Run(logicFieldType), 
-                    className, 
-                    logicFieldType.Members
-                        .OfType<PropertyDeclarationSyntax>()
-                        .Select(member => member.Identifier.Text)
-                        .Distinct()));
-        }
-        catch (Exception e)
-        {
-            // ignored
-        }
+        context.AddSource($"{fileName}.g.cs", content);
     }
 }

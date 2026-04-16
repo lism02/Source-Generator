@@ -1,36 +1,36 @@
 ﻿using System.Collections.Generic;
-using BoilerPlateGeneration.LogicFields;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.ObjectImplementation;
 
-public class ObjectImplementationTemplates
+public class ObjectImplementationTemplates : ITemplate<IEnumerable<GenerationPropertyInfo>>
 {
-    public static string Class(string namespaceName, ClassDeclarationSyntax classDeclaration, 
-        IEnumerable<string> properties)
-        => $"""
-            using System;
-            using LogicFields = {namespaceName}.{LogicFieldTemplates.ClassName(classDeclaration)};
+    public bool NeedsLogicFieldsUsing => true;
 
-            namespace {namespaceName};
+    public IEnumerable<string> GetUsings()
+        => ["using System;",];
 
-            public partial class {classDeclaration.Identifier.Text} : TimpObject
-            {"{"}
-                {string.Join("\n", properties)}
-            {"}"}
-            """;
+    public string GetName(ClassDeclarationSyntax classDeclaration)
+        => classDeclaration.Identifier.Text;
 
-    public static string Property(string type, string name, bool hasGetter, bool hasSetter)
-        => (hasGetter, hasSetter) switch
+    public string GetSignature(ClassDeclarationSyntax classDeclaration)
+        => $"public partial class {GetName(classDeclaration)}";
+
+    public string GetContent(IEnumerable<GenerationPropertyInfo> contentInfo)
+        => string.Join("\n\t", contentInfo.Select(GetImplementationProperty));
+    
+    private static string GetImplementationProperty(GenerationPropertyInfo info)
+        => (info.HasGetter, info.HasSetter) switch
         {
-            (true, true)=> $"""
-                                    public partial {type} {name} 
-                                        {"{"}
-                                            get => this[LogicFields.{name}].ValueAs<{type}>();
-                                            set => this[LogicFields.{name}].Value = value;
-                                        {"}"}
-                                    """,
-            (true, false) => $"public partial {type} {name} => this[LogicFields.{name}].ValueAs<{type}>();",
+            (true, true) => $"""
+                             public partial {info.Type} {info.Name} 
+                                 {"{"}
+                                     get => this[LogicFields.{info.Name}].ValueAs<{info.Type}>();
+                                     set => this[LogicFields.{info.Name}].Value = value;
+                                 {"}"}
+                             """,
+            (true, false) => $"public partial {info.Type} {info.Name} => this[LogicFields.{info.Name}].ValueAs<{info.Type}>();",
             _ => string.Empty
         };
 }

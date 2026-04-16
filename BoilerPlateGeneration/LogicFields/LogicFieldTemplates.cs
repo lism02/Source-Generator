@@ -4,37 +4,25 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.LogicFields;
 
-public static class LogicFieldTemplates
+public class LogicFieldTemplates : ITemplate<LogicFieldInfo>
 {
-    public static string ClassName(TypeDeclarationSyntax typeDeclaration)
-        => typeDeclaration switch
-        {
-            InterfaceDeclarationSyntax interfaceDeclaration => ClassName(interfaceDeclaration),
-            ClassDeclarationSyntax classDeclaration => ClassName(classDeclaration),
-            _ => string.Empty
-        };
-    
-    public static string ClassName(InterfaceDeclarationSyntax interfaceDeclaration)
-        =>ClassName(interfaceDeclaration.Identifier.Text[1..]);
-    
-    public static string ClassName(ClassDeclarationSyntax classDeclaration)
-        =>ClassName(classDeclaration.Identifier.Text);
-    
-    private static string ClassName(string name)
-        => $"{name}LogicFields";
-    
-    public static string Class(string namespaceName, string className, params IEnumerable<string> fields)
-        => $"""
-            using System;
-            
-            namespace {namespaceName};
-            
-            public static class {className}
-            {"{"}
-                {string.Join("\n\t", fields.Select(Field))}
-            {"}"}
-            """;
+    public bool NeedsLogicFieldsUsing => false;
 
-    private static string Field(string name)
-        => $"public const string {name} = \"{name}\";";
+    public IEnumerable<string> GetUsings()
+        => ["using System;"];
+
+    public string GetName(ClassDeclarationSyntax classDeclaration)
+        => $"{classDeclaration.Identifier.Text}LogicFields";
+
+    public string GetSignature(ClassDeclarationSyntax classDeclaration)
+        => $"public static class {GetName(classDeclaration)}";
+
+    public IEnumerable<string> GetModifiers()
+        => ["static"];
+
+    public string GetContent(LogicFieldInfo contentInfo)
+        => string.Join("\n\t", contentInfo.Fields.Select(field=>$"public const string {GetFieldName(field)} = \"{GetFieldName(field)}\";"));
+
+    public string GetFieldName(string field)
+        => field;
 }

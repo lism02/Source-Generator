@@ -5,6 +5,10 @@ using System.Text;
 
 namespace BoilerPlate.Request;
 
+public class Veld
+{
+}
+
 public class ObjectVeld
 {
     public T ValueAs<T>()
@@ -20,10 +24,17 @@ public class TimpObject
     public ObjectVeld this[string path] => new ObjectVeld();
 }
 
+public class Consts
+{
+    public const string Group = "MCN";
+}
+
 [GenerateLogicFields]
+[LogicInfo(ClassId = "MyLogicClassId", Group = Consts.Group, PrimaryDisplayField =nameof(Id), Guid = "guid", TabelType = TabelTypes.Production)]
 public partial class Request : TimpObject
 {
-    public partial string Id { get; set; }
-    public partial double Test { get; }
+    [ExternalProperty] [IdField] public partial string Id { get; set; }
+
+    [DefaultLookupDisplayField] public partial double Test { get; }
     public partial bool Reqint { get; set; }
 }

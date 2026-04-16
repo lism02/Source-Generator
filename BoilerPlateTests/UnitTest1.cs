@@ -1,4 +1,6 @@
-﻿using BoilerPlateGeneration.LogicFields;
+﻿using BoilerPlateGeneration.InterfaceGeneration;
+using BoilerPlateGeneration.LogicFields;
+using BoilerPlateGeneration.LogicGeneration;
 using BoilerPlateGeneration.ObjectImplementation;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -19,39 +21,55 @@ namespace BoilerPlateGeneration.Tests
                 
                 namespace BoilerPlate.Request;
                 
-                
                 public class ObjectVeld
                 {
                     public T ValueAs<T>()
                     {
-                        return default;
+                        return (T) Value;
                     }
+                
+                    public object Value { get; set; }
                 }
                 
                 public class TimpObject
                 {
-                    public int HiObj { get; set; }
                     public ObjectVeld this[string path] => new ObjectVeld();
                 }
                 
-                public interface IRequest
+                [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+                public class BelongsToLogicAttribute : Attribute
                 {
-                    public bool Reqint { get; set; }
-                }
-                
-                public interface IRequest2
-                {
-                    public int Reqint { get; set; }
+                    public required string ClassId { get; set; }
                 }
                 
                 [GenerateLogicFields]
-                public partial class Request : TimpObject, IRequest, IRequest2
+                [LogicInfo(ClassId = "MyLogicClassId", Group = "MCN", PrimaryDisplayField = RequestLogicFields.Id, Guid = "guid")]
+                public partial class Request : TimpObject
                 {
+                    [ExternalProperty] 
                     public partial string Id { get; set; }
+                    
+                    [DefaultLookupDisplayField]
                     public partial double Test { get; }
                     public partial bool Reqint { get; set; }
-                    int IRequest2.Reqint { get; set; }
                 }
+                
+                public class TimpObjectLogic
+                {
+                    public virtual void CSInitialize()
+                    {
+                    }
+                
+                    protected void SetGenerateUniqueIdInfo(string classId)
+                    {
+                    }
+                
+                    protected void AddStringField(string name, string databaseName, string defaultValue, int length)
+                    {
+                    }
+                }
+                
+                
                 """;
 
             Verify(source);
@@ -63,7 +81,7 @@ namespace BoilerPlateGeneration.Tests
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
             var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree]);
 
-            var generator = new ObjectImplementationGenerator();
+            var generator = new LogicGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
 

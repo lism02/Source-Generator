@@ -1,6 +1,8 @@
 <Solution>
   <Project Path="BoilerPlate/BoilerPlate.csproj" />
   <Project Path="BoilerPlateGeneration/BoilerPlateGeneration.csproj" />
-  <Project Path="BoilerPlateTests/BoilerPlateTests.csproj" Id="529ad61a-b1b7-408b-8ff2-34cb9a3485c8" />
-  <Project Path="Shared/Shared.csproj" Id="67b26c24-860c-4c3b-9baa-4dd55f1a1839" />
+  <Project Path="BoilerPlateHiX/BoilerPlateHiX.csproj" />
+  <Project Path="BoilerPlateHiXGeneration/BoilerPlateHiXGeneration.csproj" />
+  <Project Path="BoilerPlateTests/BoilerPlateTests.csproj" />
+  <Project Path="Shared/Shared.csproj" />
 </Solution>

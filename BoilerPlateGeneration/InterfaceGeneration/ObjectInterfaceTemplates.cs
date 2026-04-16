@@ -1,26 +1,31 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using BoilerPlateGeneration.LogicFields;
+using BoilerPlateGeneration.ObjectImplementation;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.InterfaceGeneration;
 
-public class ObjectInterfaceTemplates
+public record InterfaceInfo(IEnumerable<GenerationPropertyInfo> Properties);
+
+public class ObjectInterfaceTemplates:ITemplate<InterfaceInfo>
 {
-    public static string Class(string namespaceName, ClassDeclarationSyntax classDeclaration, 
-        IEnumerable<string> properties)
-        => $"""
-            using System;
+    public bool NeedsLogicFieldsUsing => false;
 
-            namespace {namespaceName};
+    public IEnumerable<string> GetUsings()
+        => ["using System;"];
 
-            public partial interface I{classDeclaration.Identifier.Text}
-            {"{"}
-                {string.Join("\n", properties)}
-            {"}"}
-            """;
+    public virtual string GetName(ClassDeclarationSyntax classDeclaration)
+        => $"I{classDeclaration.Identifier.Text}";
 
-    public static string Property(string type, string name, bool hasGetter, bool hasSetter)
-        => $"public {type} {name} {{ {Getter(hasGetter)} {Setter(hasSetter)} }} ";
+    public virtual string GetSignature(ClassDeclarationSyntax classDeclaration)
+        => $"public partial interface {GetName(classDeclaration)}";
+
+    public string GetContent(InterfaceInfo contentInfo)
+        => string.Join("\n", contentInfo.Properties.Select(Property));
+    
+    private static string Property(GenerationPropertyInfo property)
+        => $"public {property.Type} {property.Name} {{ {Getter(property.HasGetter)} {Setter(property.HasSetter)} }} ";
 
     private static string Getter(bool hasGetter) => hasGetter ? "get;" : string.Empty;
     private static string Setter(bool hasSetter) => hasSetter ? "set;" : string.Empty;
