@@ -10,7 +10,14 @@ public class LogicGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var to = context.SyntaxProvider.ForAttributeWithMetadataName("BoilerPlate.LogicInfoAttribute",
+        var assemblyAttributes = context.CompilationProvider
+            .Select((comp, cancelToken) => (string?)comp.Assembly.GetAttributes()
+                .SingleOrDefault(attribute => attribute.AttributeClass?.Name == "LogicGroupAttribute")
+                ?.NamedArguments
+                .SingleOrDefault(arg => arg.Key == "Group")
+                .Value.Value);
+
+        var toGenerateFor = context.SyntaxProvider.ForAttributeWithMetadataName("BoilerPlate.LogicInfoAttribute",
             (node, cancelToken) => node is ClassDeclarationSyntax,
             (ctx, cancelToken) => (
                 (ClassDeclarationSyntax) ctx.TargetNode,
@@ -18,7 +25,13 @@ public class LogicGenerator : IIncrementalGenerator
                 GetAttributeInfo(ctx.Attributes))
         );
 
-        context.RegisterSourceOutput(to, Execute);
+        var valuesProvider = toGenerateFor.Combine(assemblyAttributes).Select((hello, cancelToken) => (hello.Left.Item1, hello.Left.Item2, 
+            hello.Left.Item3 with
+            {
+                Group = hello.Right??"didn't find anything"
+            }));
+
+        context.RegisterSourceOutput(valuesProvider, Execute);
     }
 
     private LogicContentInfo GetContentInfo(INamedTypeSymbol symbol, ImmutableArray<AttributeData> attributes)
@@ -43,12 +56,11 @@ public class LogicGenerator : IIncrementalGenerator
             .SingleOrDefault(attribute => attribute.AttributeClass?.Name == "LogicInfoAttribute")
             ?.NamedArguments;
         return new LogicAttributeInfo(
-            arguments.Get<string>("Group"),
+            "will be replaced",
             arguments.Get<string>("Guid"),
             arguments.Get<int>("TabelType"));
     }
-
-
+    
     public void Execute(SourceProductionContext context,
         (ClassDeclarationSyntax classDeclaration, LogicContentInfo contentInfo, LogicAttributeInfo attributeInfo) info)
     {

@@ -25,7 +25,8 @@ public class ObjectInterfaceGenerator : IIncrementalGenerator
                                        && classDeclaration.IsSubClassOf("TimpObject"),
                 (ctx, cancelToken) => (
                     (ClassDeclarationSyntax) ctx.Node,
-                    GetInterfaceInfo((INamedTypeSymbol) ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, cancelToken)))
+                    GetContentInfo((INamedTypeSymbol) ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, cancelToken)),
+                    GetAttributeInfo((INamedTypeSymbol) ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, cancelToken)))
             );
 
 
@@ -38,8 +39,17 @@ public class ObjectInterfaceGenerator : IIncrementalGenerator
             (ctx, generationInfo) => Execute(context, ctx, generationInfo));
     }
 
-    private InterfaceInfo GetInterfaceInfo(INamedTypeSymbol symbol)
-        => new InterfaceInfo(symbol
+    private InterfaceAttributeInfo GetAttributeInfo(INamedTypeSymbol symbol)
+    {
+        var logicInfo = symbol
+            .GetAttributes()
+            .SingleOrDefault(attribute => attribute.AttributeClass?.Name == "LogicInfoAttribute")
+            ?.NamedArguments;
+        return new(logicInfo.Get<string>("ClassId"));
+    }
+
+    private InterfaceContentInfo GetContentInfo(INamedTypeSymbol symbol)
+        => new(symbol
             .GetMembers()
             .OfType<IPropertySymbol>()
             .Where(property => property.IsPartialDefinition)
@@ -51,32 +61,35 @@ public class ObjectInterfaceGenerator : IIncrementalGenerator
                 property.SetMethod is not null)));
 
     public void Execute(IncrementalGeneratorInitializationContext ctx, SourceProductionContext context,
-        (ClassDeclarationSyntax classDeclaration, InterfaceInfo interfaceInfo) info)
+        (ClassDeclarationSyntax classDeclaration, InterfaceContentInfo contentInfo, InterfaceAttributeInfo attributeInfo
+            ) info)
     {
-        if (!info.interfaceInfo.Properties.Any())
+        if (!info.contentInfo.Properties.Any())
         {
             return;
         }
-        
-        var publicProperties = info.interfaceInfo.Properties
+
+        var publicProperties = info.contentInfo.Properties
             .Where(property =>
                 property is GenerationPropertyInfoWithExternalInfo externalPropertyInfo
                 && externalPropertyInfo.HasExternalPropertyAttribute)
             .ToList();
 
-        var internalProperties = info.interfaceInfo.Properties
+        var internalProperties = info.contentInfo.Properties
             .Where(property =>
                 property is GenerationPropertyInfoWithExternalInfo externalPropertyInfo
                 && !externalPropertyInfo.HasExternalPropertyAttribute)
             .ToList();
-        
+
         if (publicProperties.Any() && internalProperties.Any())
         {
             var (fileNameInterface, contentInterface) =
-                TemplateManager.Run(new ObjectInterfaceTemplates(), info.classDeclaration, new InterfaceInfo(publicProperties));
+                TemplateManager.Run(new ObjectInterfaceTemplates(), info.classDeclaration,
+                    new InterfaceContentInfo(publicProperties), info.attributeInfo);
 
             var (fileNameInternalInterface, contentInternalInterface) =
-                TemplateManager.Run(new ObjectInterfaceInternalTemplates(), info.classDeclaration, new InterfaceInfo(internalProperties));
+                TemplateManager.Run(new ObjectInterfaceInternalTemplates(), info.classDeclaration,
+                    new InterfaceContentInfo(internalProperties), info.attributeInfo);
 
             context.AddSource($"{fileNameInterface}.g.cs", contentInterface);
             context.AddSource($"{fileNameInternalInterface}.g.cs", contentInternalInterface);
@@ -84,7 +97,8 @@ public class ObjectInterfaceGenerator : IIncrementalGenerator
         else
         {
             var (fileNameInterface, contentInterface) =
-                TemplateManager.Run(new ObjectInterfaceTemplates(), info.classDeclaration, info.interfaceInfo);
+                TemplateManager.Run(new ObjectInterfaceTemplates(), info.classDeclaration,
+                    info.contentInfo, info.attributeInfo);
 
             context.AddSource($"{fileNameInterface}.g.cs", contentInterface);
         }

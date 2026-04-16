@@ -69,6 +69,7 @@ namespace BoilerPlateGeneration.Tests
                     }
                 }
                 
+                [assembly:LogicGroup(Group = "MyGroupieAssembly")]
                 
                 """;
 
