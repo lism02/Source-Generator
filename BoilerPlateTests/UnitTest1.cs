@@ -14,62 +14,14 @@ namespace BoilerPlateGeneration.Tests
         public void Test1()
         {
             var source = """
-                using System;
-                using System.Collections.Generic;
-                using System.ComponentModel.Design;
-                using System.Text;
-                
-                namespace BoilerPlate.Request;
-                
-                public class ObjectVeld
-                {
-                    public T ValueAs<T>()
-                    {
-                        return (T) Value;
-                    }
-                
-                    public object Value { get; set; }
-                }
-                
-                public class TimpObject
-                {
-                    public ObjectVeld this[string path] => new ObjectVeld();
-                }
-                
-                [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-                public class BelongsToLogicAttribute : Attribute
-                {
-                    public required string ClassId { get; set; }
-                }
-                
                 [GenerateLogicFields]
-                [LogicInfo(ClassId = "MyLogicClassId", Group = "MCN", PrimaryDisplayField = RequestLogicFields.Id, Guid = "guid")]
-                public partial class Request : TimpObject
+                public partial class Request
                 {
-                    [ExternalProperty] 
                     public partial string Id { get; set; }
-                    
-                    [DefaultLookupDisplayField]
+                
                     public partial double Test { get; }
                     public partial bool Reqint { get; set; }
                 }
-                
-                public class TimpObjectLogic
-                {
-                    public virtual void CSInitialize()
-                    {
-                    }
-                
-                    protected void SetGenerateUniqueIdInfo(string classId)
-                    {
-                    }
-                
-                    protected void AddStringField(string name, string databaseName, string defaultValue, int length)
-                    {
-                    }
-                }
-                
-                [assembly:LogicGroup(Group = "MyGroupieAssembly")]
                 
                 """;
 
@@ -82,7 +34,7 @@ namespace BoilerPlateGeneration.Tests
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
             var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree]);
 
-            var generator = new LogicGenerator();
+            var generator = new LogicFieldsGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
 
