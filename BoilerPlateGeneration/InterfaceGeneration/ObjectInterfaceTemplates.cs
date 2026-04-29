@@ -10,7 +10,7 @@ public record InterfaceContentInfo(IEnumerable<GenerationPropertyInfo> Propertie
 
 public record InterfaceAttributeInfo(string BelongsToLogic);
 
-public class ObjectInterfaceTemplates:ITemplate<InterfaceContentInfo, InterfaceAttributeInfo>
+public class ObjectInterfaceTemplates : ITemplate<InterfaceContentInfo, InterfaceAttributeInfo>
 {
     public bool NeedsLogicFieldsUsing => false;
 
@@ -25,7 +25,7 @@ public class ObjectInterfaceTemplates:ITemplate<InterfaceContentInfo, InterfaceA
 
     public string GetContent(InterfaceContentInfo contentContentInfo)
         => string.Join("\n", contentContentInfo.Properties.Select(Property));
-    
+
     private static string Property(GenerationPropertyInfo property)
         => $"public {property.Type} {property.Name} {{ {Getter(property.HasGetter)} {Setter(property.HasSetter)} }} ";
 

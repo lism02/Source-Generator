@@ -5,8 +5,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.ObjectImplementation;
 
-public record GenerationPropertyInfo(string Type, string Name, bool HasGetter, bool HasSetter);
-
 [Generator]
 public class ObjectImplementationGenerator : IIncrementalGenerator
 {

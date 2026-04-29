@@ -14,8 +14,14 @@ namespace BoilerPlateGeneration.Tests
         public void Test1()
         {
             var source = """
-                [GenerateLogicFields]
-                public partial class Request
+                using System;
+                
+                public class TimpObject
+                {
+                    public ObjectVeld this[string path] => new ObjectVeld();
+                }
+                
+                public partial class Request : TimpObject
                 {
                     public partial string Id { get; set; }
                 
@@ -34,7 +40,7 @@ namespace BoilerPlateGeneration.Tests
             var syntaxTree = CSharpSyntaxTree.ParseText(source);
             var compilation = CSharpCompilation.Create("TestAssembly", [syntaxTree]);
 
-            var generator = new LogicFieldsGenerator();
+            var generator = new ObjectImplementationGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
 

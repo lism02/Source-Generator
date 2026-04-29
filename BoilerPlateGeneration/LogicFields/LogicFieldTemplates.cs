@@ -17,9 +17,6 @@ public class LogicFieldTemplates : ITemplate<LogicFieldInfo>
     public string GetSignature(ClassDeclarationSyntax classDeclaration)
         => $"public static class {GetName(classDeclaration)}";
 
-    public IEnumerable<string> GetModifiers()
-        => ["static"];
-
     public string GetContent(LogicFieldInfo contentInfo)
         => string.Join("\n\t", contentInfo.Fields.Select(field=>$"public const string {GetFieldName(field)} = \"{GetFieldName(field)}\";"));
 

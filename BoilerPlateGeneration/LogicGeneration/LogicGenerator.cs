@@ -11,13 +11,14 @@ public class LogicGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var assemblyAttributes = context.CompilationProvider
-            .Select((comp, cancelToken) => (string?)comp.Assembly.GetAttributes()
+            .Select((compilation, cancelToken) => (string?) compilation.Assembly.GetAttributes()
                 .SingleOrDefault(attribute => attribute.AttributeClass?.Name == "LogicGroupAttribute")
                 ?.NamedArguments
                 .SingleOrDefault(arg => arg.Key == "Group")
                 .Value.Value);
 
-        var toGenerateFor = context.SyntaxProvider.ForAttributeWithMetadataName("BoilerPlate.LogicInfoAttribute",
+        var classesToGenerateLogic = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BoilerPlate.LogicInfoAttribute",
             (node, cancelToken) => node is ClassDeclarationSyntax,
             (ctx, cancelToken) => (
                 (ClassDeclarationSyntax) ctx.TargetNode,
@@ -25,13 +26,14 @@ public class LogicGenerator : IIncrementalGenerator
                 GetAttributeInfo(ctx.Attributes))
         );
 
-        var valuesProvider = toGenerateFor.Combine(assemblyAttributes).Select((hello, cancelToken) => (hello.Left.Item1, hello.Left.Item2, 
-            hello.Left.Item3 with
-            {
-                Group = hello.Right??"didn't find anything"
-            }));
+        var combined = classesToGenerateLogic.Combine(assemblyAttributes)
+            .Select((combination, cancelToken) => (combination.Left.Item1, combination.Left.Item2,
+                combination.Left.Item3 with
+                {
+                    Group = combination.Right ?? "Undetermined group"
+                }));
 
-        context.RegisterSourceOutput(valuesProvider, Execute);
+        context.RegisterSourceOutput(combined, Execute);
     }
 
     private LogicContentInfo GetContentInfo(INamedTypeSymbol symbol, ImmutableArray<AttributeData> attributes)
@@ -56,11 +58,11 @@ public class LogicGenerator : IIncrementalGenerator
             .SingleOrDefault(attribute => attribute.AttributeClass?.Name == "LogicInfoAttribute")
             ?.NamedArguments;
         return new LogicAttributeInfo(
-            "will be replaced",
+            "Will be replaced",
             arguments.Get<string>("Guid"),
             arguments.Get<int>("TabelType"));
     }
-    
+
     public void Execute(SourceProductionContext context,
         (ClassDeclarationSyntax classDeclaration, LogicContentInfo contentInfo, LogicAttributeInfo attributeInfo) info)
     {

@@ -14,7 +14,7 @@ public record LogicContentInfo(
     string Name,
     string ClassId,
     IEnumerable<string> IdFields,
-    IEnumerable<string> Fields,
+    IEnumerable<GenerationLogicFieldInfo> Fields,
     string PrimaryDisplayField,
     IEnumerable<string> DefaultLookupDisplayFields);
 

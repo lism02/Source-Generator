@@ -5,8 +5,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.LogicFields;
 
-public record LogicFieldInfo(IEnumerable<string> Fields);
-
 [Generator]
 public class LogicFieldsGenerator : IIncrementalGenerator
 {
@@ -25,7 +23,8 @@ public class LogicFieldsGenerator : IIncrementalGenerator
     private IEnumerable<string> GetPropertyNames(INamedTypeSymbol symbol)
         => symbol.GetMembers()
             .OfType<IPropertySymbol>()
-            .Select(property => property.Name);
+            .Select(property => property.Name)
+            .ToList();
 
     private void Execute(SourceProductionContext context,
         (ClassDeclarationSyntax classDeclaration, LogicFieldInfo info) parameters)

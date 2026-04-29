@@ -8,14 +8,6 @@ namespace BoilerPlateGeneration.InterfaceGeneration;
 [Generator]
 public class ObjectInterfaceGenerator : IIncrementalGenerator
 {
-    public record GenerationPropertyInfoWithExternalInfo(
-        bool HasExternalPropertyAttribute,
-        string Type,
-        string Name,
-        bool HasGetter,
-        bool HasSetter)
-        : GenerationPropertyInfo(Type, Name, HasGetter, HasSetter);
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var toGenerateFor =
