@@ -2,7 +2,8 @@
 
 public class GenericObjectLogic<TInterface, TImplementation>
 {
-    protected IList<string> ID_Velden=[]; 
+    protected IList<string> ID_Velden=[];
+    protected string RightsID;
     protected string PrimaryDisplayField { get; set; }
     protected IList<string> DefaultLookupFields = [];
     
