@@ -5,25 +5,6 @@ using System.Text;
 
 namespace BoilerPlate.Request;
 
-public class Veld
-{
-}
-
-public class ObjectVeld
-{
-    public T ValueAs<T>()
-    {
-        return (T) Value;
-    }
-
-    public object Value { get; set; }
-}
-
-public class TimpObject
-{
-    public ObjectVeld this[string path] => new ObjectVeld();
-}
-
 [GenerateLogicFields]
 [LogicInfo(
     ClassId = "MyLogicClassId",

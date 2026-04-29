@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using BoilerPlateGeneration.ObjectImplementation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -20,13 +19,7 @@ public class ObjectInterfaceGenerator : IIncrementalGenerator
                     GetContentInfo((INamedTypeSymbol) ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, cancelToken)),
                     GetAttributeInfo((INamedTypeSymbol) ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, cancelToken)))
             );
-
-
-        // var logics = context.SyntaxProvider.ForAttributeWithMetadataName("ClassRegistrationAttribute",
-        //     (node, token) => node is ClassDeclarationSyntax classDeclaration
-        //                      && IsSubclassOfTimpObject(classDeclaration, "GenericObjectLogic"),
-        //     (ctx, token) => new GenerationInfo((ClassDeclarationSyntax) ctx.TargetNode, ctx.TargetSymbol)) ;
-
+        
         context.RegisterImplementationSourceOutput(toGenerateFor,
             (ctx, generationInfo) => Execute(context, ctx, generationInfo));
     }

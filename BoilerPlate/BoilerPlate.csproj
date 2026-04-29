@@ -7,5 +7,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="../BoilerPlateGeneration/BoilerPlateGeneration.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+		<ProjectReference Include="..\Core\Core.csproj" />
 	</ItemGroup>
 </Project>
