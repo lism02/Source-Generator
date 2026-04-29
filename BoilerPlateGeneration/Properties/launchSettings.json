@@ -1,1 +1,8 @@
-{}
+{
+  "profiles": {
+    "Generators": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../BoilerPlate/BoilerPlate.csproj"
+    }
+  }
+}
