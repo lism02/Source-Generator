@@ -46,6 +46,7 @@ public class LogicGenerator : IIncrementalGenerator
 
         return new LogicContentInfo(symbol.Name,
             logicInfoArguments.Get<string>("ClassId"),
+            logicInfoArguments.Get<string>("RightsId"),
             properties.GetPropertyNamesWithAttribute("IdFieldAttribute"),
             properties.Select(property => property.Name),
             logicInfoArguments.Get<string>("PrimaryDisplayField"),

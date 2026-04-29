@@ -29,7 +29,7 @@ public class TimpObject
     ClassId = "MyLogicClassId",
     PrimaryDisplayField = nameof(Id),
     Guid = "guid",
-    TabelType = TabelTypes.Production)]
+    TabelType = TabelTypes.Production, RightsId = "RequestRight")]
 public partial class Request : TimpObject
 {
     [ExternalProperty] [IdField] public partial string Id { get; set; }

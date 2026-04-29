@@ -4,6 +4,7 @@ using System.Linq;
 using BoilerPlateGeneration.InterfaceGeneration;
 using BoilerPlateGeneration.LogicFields;
 using BoilerPlateGeneration.ObjectImplementation;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace BoilerPlateGeneration.LogicGeneration;
@@ -13,8 +14,9 @@ public record LogicAttributeInfo(string Group, string Guid, int TabelType);
 public record LogicContentInfo(
     string Name,
     string ClassId,
+    string RightsId,
     IEnumerable<string> IdFields,
-    IEnumerable<GenerationLogicFieldInfo> Fields,
+    IEnumerable<string> Fields,
     string PrimaryDisplayField,
     IEnumerable<string> DefaultLookupDisplayFields);
 
@@ -51,6 +53,7 @@ public class LogicTemplates : ITemplate<LogicContentInfo, LogicAttributeInfo>
         var logicFields = contentInfo.Fields.Select(logicFieldTemplator.GetFieldName);
         var defaultLookupDisplayLogicFields =
             contentInfo.DefaultLookupDisplayFields.Select(logicFieldTemplator.GetFieldName);
+        
         return $"""
                     public const string ClassId = "{contentInfo.ClassId}";
                     //public static {GetName(contentInfo.Name)} Instance => BaseUtil.CreateObjectLogicByClassId(ClassId);
@@ -63,6 +66,8 @@ public class LogicTemplates : ITemplate<LogicContentInfo, LogicAttributeInfo>
                         
                         InitializeFields();
                         SetSearchInfo();
+                        
+                        RightsID = "{contentInfo.RightsId}";
                     {"}"}
                     
                     private void InitializeFields()

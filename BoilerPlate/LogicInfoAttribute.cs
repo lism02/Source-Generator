@@ -7,4 +7,5 @@ public class LogicInfoAttribute : Attribute
     public required string Guid { get; set; }
     public required string PrimaryDisplayField { get; set; }
     public required TabelTypes TabelType { get; set; }
+    public string RightsId { get; set; }
 }
