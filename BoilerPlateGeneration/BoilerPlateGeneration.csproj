@@ -21,8 +21,4 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Shared\Shared.csproj" OutputItemType="Analyzer"/>
-	</ItemGroup>
-
 </Project>
