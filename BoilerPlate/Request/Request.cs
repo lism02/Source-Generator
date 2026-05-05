@@ -16,5 +16,6 @@ public partial class Request : TimpObject
     [ExternalProperty] [IdField] public partial string Id { get; set; }
 
     [DefaultLookupDisplayField] public partial double Test { get; }
+    [SearchInfo(FilterOption = FilterOptions.Equal)]
     public partial bool Reqint { get; set; }
 }

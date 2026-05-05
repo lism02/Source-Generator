@@ -11,6 +11,8 @@ namespace BoilerPlateGeneration.LogicGeneration;
 
 public record LogicAttributeInfo(string Group, string Guid, int TabelType);
 
+public record SearchInfo(string Field, IEnumerable<int> FilterOptions);
+
 public record LogicContentInfo(
     string Name,
     string ClassId,
@@ -18,7 +20,8 @@ public record LogicContentInfo(
     IEnumerable<string> IdFields,
     IEnumerable<string> Fields,
     string PrimaryDisplayField,
-    IEnumerable<string> DefaultLookupDisplayFields);
+    IEnumerable<string> DefaultLookupDisplayFields,
+    IEnumerable<SearchInfo> SearchInfos);
 
 public class LogicTemplates : ITemplate<LogicContentInfo, LogicAttributeInfo>
 {
@@ -53,7 +56,12 @@ public class LogicTemplates : ITemplate<LogicContentInfo, LogicAttributeInfo>
         var logicFields = contentInfo.Fields.Select(logicFieldTemplator.GetFieldName);
         var defaultLookupDisplayLogicFields =
             contentInfo.DefaultLookupDisplayFields.Select(logicFieldTemplator.GetFieldName);
-        
+        var searchInfos =
+            contentInfo.SearchInfos.Select(searchInfo => searchInfo with
+            {
+                Field = logicFieldTemplator.GetFieldName(searchInfo.Field)
+            });
+
         return $"""
                     public const string ClassId = "{contentInfo.ClassId}";
                     //public static {GetName(contentInfo.Name)} Instance => BaseUtil.CreateObjectLogicByClassId(ClassId);
@@ -79,6 +87,8 @@ public class LogicTemplates : ITemplate<LogicContentInfo, LogicAttributeInfo>
                     {"{"}
                         PrimaryDisplayField = LogicFields.{primaryDisplayLogicField};
                         {string.Join("\n\t", defaultLookupDisplayLogicFields.Select(AddDefaultLookupField))}
+                        
+                        {string.Join("\n\t", searchInfos.Select(AddSearchInfoItem))}
                     {"}"}
                 """;
     }
@@ -91,6 +101,12 @@ public class LogicTemplates : ITemplate<LogicContentInfo, LogicAttributeInfo>
 
     private static string AddField(string path)
         => $"AddStringField(LogicFields.{path}, LogicFields.{path}, string.Empty, 100);";
+
+    private static string AddSearchInfoItem(SearchInfo searchInfo)
+        => string.Join("\n\t", searchInfo.FilterOptions.Select(option => AddSearchInfoItem(searchInfo.Field, option)));
+
+    private static string AddSearchInfoItem(string field, int filterOption)
+        => $"//SearchInfo.AddSearchInfoItem(LogicFields.{field}, (FilterOptions){filterOption});";
 
     private static string FieldMethod(Type type)
     {

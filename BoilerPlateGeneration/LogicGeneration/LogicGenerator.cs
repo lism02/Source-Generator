@@ -44,13 +44,21 @@ public class LogicGenerator : IIncrementalGenerator
 
         var properties = symbol.GetMembers().OfType<IPropertySymbol>();
 
+
+        var searchInfos = properties
+            .Select(property => new SearchInfo(property.Name, property.GetAttributes()
+                .Where(attribute => attribute.AttributeClass?.Name == "SearchInfoAttribute")
+                .Select(attribute => attribute.NamedArguments.Get<int>("FilterOption"))));
+
+
         return new LogicContentInfo(symbol.Name,
             logicInfoArguments.Get<string>("ClassId"),
             logicInfoArguments.Get<string>("RightsId"),
             properties.GetPropertyNamesWithAttribute("IdFieldAttribute"),
             properties.Select(property => property.Name),
             logicInfoArguments.Get<string>("PrimaryDisplayField"),
-            properties.GetPropertyNamesWithAttribute("DefaultLookupDisplayFieldAttribute"));
+            properties.GetPropertyNamesWithAttribute("DefaultLookupDisplayFieldAttribute"),
+            searchInfos);
     }
 
     private LogicAttributeInfo GetAttributeInfo(ImmutableArray<AttributeData> attributes)

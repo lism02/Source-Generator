@@ -27,6 +27,9 @@ public static class Extensions
 
     public static T Get<T>(this ImmutableArray<KeyValuePair<string, TypedConstant>>? list, string key)
         => (T) list?.SingleOrDefault(item => item.Key == key).Value.Value;
+    
+    public static T Get<T>(this ImmutableArray<KeyValuePair<string, TypedConstant>> list, string key)
+        => (T) list.SingleOrDefault(item => item.Key == key).Value.Value;
 
     public static IEnumerable<string> GetPropertyNamesWithAttribute(this IEnumerable<IPropertySymbol>? properties,
         string attributeName)
